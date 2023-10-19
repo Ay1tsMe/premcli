@@ -1,5 +1,11 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 Adam Wyatt
+
+	Sets up premcli.conf file for the user
+	Collects information such as:
+	- API Key
+	- TimeZone
+	- Favourite Team
 */
 package cmd
 
@@ -16,6 +22,7 @@ import (
 var configPath = filepath.Join(os.Getenv("HOME"), ".config", "premcli", "premcli.conf")
 var overwrite bool
 
+// Checks if premcli.conf exists
 func ConfigExists() bool {
 	if _, err := os.Stat(configPath); err == nil {
 		return true
@@ -26,6 +33,7 @@ func ConfigExists() bool {
 	}
 }
 
+// Creates the premcli directory
 func CreateDir() bool {
 	dir := filepath.Dir(configPath)
 
@@ -44,6 +52,7 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Configure settings for premcli",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Deletes old premcli.conf if overwrite flag is called
 		if overwrite {
 			err := os.Remove(configPath)
 			if err != nil {
@@ -53,12 +62,14 @@ var configCmd = &cobra.Command{
 			fmt.Println("Existing config file removed.")
 		}
 
+		// Return if premcli.conf exists
 		if ConfigExists() {
 			fmt.Println("Config file already exists at", configPath)
 			fmt.Println("Use the -overwrite flag to replace it.")
 			return
 		}
 
+		// Get config variables
 		reader := bufio.NewReader(os.Stdin)
 
 		fmt.Print("Enter your API key: ")
@@ -79,6 +90,7 @@ var configCmd = &cobra.Command{
 			return
 		}
 
+		// Writes variables to premcli.conf
 		err := os.WriteFile(configPath, []byte(content), 0644)
 		if err != nil {
 			fmt.Printf("Failed to write to config file: %s\n", err)
