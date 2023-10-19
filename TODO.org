@@ -32,3 +32,4 @@
 - [X] Live Scores
 - [X] Lineups
 - [ ] Free/50 requests per month
+
