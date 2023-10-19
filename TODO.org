@@ -1,0 +1,34 @@
+* What I want out of an API
+- [ ] Table
+- [ ] Fixtures
+- [ ] Live Scores
+- [ ] Lineups
+
+* List of known API's
+** [[https://www.api-football.com/documentation-v3#section/Introduction][API-FOOTBALL]]
+- [X] Table
+- [X] Fixtures
+- [X] Live Scores
+- [X] Lineups
+- [X] Free/100 requests per day
+
+** [[https://github.com/azharimm/football-standings-api][Football Standings API]]
+- [X] Table
+- [ ] Fixtures
+- [ ] Live Scores
+- [ ] Lineups
+- [ ] Free/100 requests per day
+
+** [[https://rapidapi.com/heisenbug/api/premier-league-live-scores][Premier League Live Scores]]
+- [X] Table
+- [X] Fixtures
+- [ ] Live Scores
+- [ ] Lineups
+- [X] Free/50 requests per month
+
+** [[https://docs.sportmonks.com/football/welcome/getting-started][Sportsmonk]]
+- [X] Table
+- [X] Fixtures
+- [X] Live Scores
+- [X] Lineups
+- [ ] Free/50 requests per month
