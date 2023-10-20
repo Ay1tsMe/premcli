@@ -33,3 +33,12 @@
 - [X] Lineups
 - [ ] Free/50 requests per month
 
+* Fixtures
+- [X] Get Fixtures for current week by default
+- [X] Highlight Favourite Team Fixture
+- [X] Display Date and time of each fixture
+- [X] Show Round title at the top of the fixture list
+- [ ] Sort the fixtures by date/time
+- [ ] optional flags for previous and next week fixtures (-p -n flags)
+- [ ] optional flags for all fixtures (-a flag)
+- [ ] Show live fixtures if its happening

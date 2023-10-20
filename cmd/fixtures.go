@@ -4,22 +4,22 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
-	"strings"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 var (
-	apiKey   string
-	timezone string
-	favTeam  string
+	apiKey     string
+	timezone   string
+	favTeam    string
+	roundValue string
 )
 
 type ApiResponse struct {
@@ -27,6 +27,9 @@ type ApiResponse struct {
 }
 
 type Match struct {
+	Fixture struct {
+		Date string `json:"date"`
+	} `json:"fixture"`
 	Teams struct {
 		Home struct {
 			Name string
@@ -37,51 +40,63 @@ type Match struct {
 	}
 }
 
-func GetConfig() error {
-	configFile, err := os.Open(configPath)
-	if err != nil {
-		return fmt.Errorf("Failed to open config file: %v", err)
-	}
-	defer configFile.Close()
-
-	scanner := bufio.NewScanner(configFile)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.SplitN(line, "=", 2)
-
-		if len(parts) != 2 {
-			return fmt.Errorf("Invalid config line: %s", line)
-		}
-
-		key := parts[0]
-		value := parts[1]
-
-		switch key {
-		case "API_KEY":
-			apiKey = value
-		case "TIMEZONE":
-			timezone = value
-		case "FAVTEAM":
-			favTeam = value
-		default:
-			return fmt.Errorf("Unknown config key: %s", key)
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("Error reading config file: %v", err)
-	}
-
-	return nil
+type CurrentRound struct {
+	Response []string `json:"response"`
 }
 
-func getCurrentRound() string {
-	return "TODO"
+func getCurrentRound() error {
+	url := buildRoundURL()
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("Error creating request: %v", err)
+	}
+
+	req.Header.Add("X-RapidAPI-Key", apiKey)
+	req.Header.Add("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("Error executing request: %v", err)
+	}
+
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("Error reasing response: %v", err)
+	}
+
+	var responseData CurrentRound
+	err = json.Unmarshal(body, &responseData)
+	if err != nil {
+		return fmt.Errorf("Error parsing JSON response: %v", err)
+	}
+
+	if len(responseData.Response) > 0 {
+		roundValue = responseData.Response[0]
+		return nil
+	}
+
+	return fmt.Errorf("No round information found in the API response")
 }
 
 func buildURL() string {
-	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures?league=39&season=2023&round=Regular%20Season%20-%209&timezone="
-	return baseURL + url.QueryEscape(timezone)
+	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures?league=39"
+
+	season := "&season=" + getSeasonYear()
+
+	round := "&round=" + url.QueryEscape(roundValue)
+	tz := "&timezone=" + url.QueryEscape(timezone)
+
+	return baseURL + season + round + tz
+}
+
+func buildRoundURL() string {
+	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures/rounds?league=39&current=true"
+
+	season := "&season=" + getSeasonYear()
+
+	return baseURL + season
 }
 
 func fetchAndParse() ([]Match, error) {
@@ -101,7 +116,7 @@ func fetchAndParse() ([]Match, error) {
 	}
 
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading response: %v", err)
 	}
@@ -113,6 +128,15 @@ func fetchAndParse() ([]Match, error) {
 	}
 
 	return responseData.Response, nil
+}
+
+func FormatTime(isoTime string) (string, error) {
+	parsedTime, err := time.Parse(time.RFC3339, isoTime)
+	if err != nil {
+		return "", fmt.Errorf("Error parsing time: %v", err)
+	}
+
+	return parsedTime.Format("02 Jan 2006, 03:04 PM"), nil
 }
 
 // fixturesCmd represents the fixtures command
@@ -127,14 +151,43 @@ var fixturesCmd = &cobra.Command{
 			return
 		}
 
+		err = getCurrentRound()
+		if err != nil {
+			fmt.Println("Error getting current round:", err)
+			return
+		}
+
 		matches, err := fetchAndParse()
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
 			return
 		}
 
+		color.Set(color.Underline)
+		fmt.Println(roundValue)
+		color.Unset()
+
 		for _, match := range matches {
-			fmt.Printf("[H] %s vs. %s [A]\n", match.Teams.Home.Name, match.Teams.Away.Name)
+			homeTeam := match.Teams.Home.Name
+			awayTeam := match.Teams.Away.Name
+			date := match.Fixture.Date
+
+			userFriendlyTime, err := FormatTime(date)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			matchDisplay := fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s", homeTeam, awayTeam, userFriendlyTime)
+
+			if isFavTeam(homeTeam, awayTeam, favTeam) {
+				color.Set(color.Bold)
+				fmt.Println(matchDisplay)
+				color.Unset()
+				continue
+			}
+
+			fmt.Println(matchDisplay)
 		}
 	},
 }
