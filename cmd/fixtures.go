@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -28,8 +30,13 @@ type ApiResponse struct {
 
 type Match struct {
 	Fixture struct {
-		Date string `json:"date"`
-	} `json:"fixture"`
+		ID   int
+		Date string
+	}
+	Status struct {
+		Short   string
+		Elapsed *int
+	}
 	Teams struct {
 		Home struct {
 			Name string
@@ -37,6 +44,10 @@ type Match struct {
 		Away struct {
 			Name string
 		}
+	}
+	Score struct {
+		Home int
+		Away int
 	}
 }
 
@@ -139,6 +150,47 @@ func FormatTime(isoTime string) (string, error) {
 	return parsedTime.Format("02 Jan 2006, 03:04 PM"), nil
 }
 
+func getDateFromMatchDisplay(matchDisplay string) string {
+	dateString := strings.Split(matchDisplay, "Date: ")[1][:21]
+	return dateString
+}
+
+func sortFixtures(fixturesArr []string) []string {
+	layout := "02 Jan 2006, 03:04 PM"
+
+	sort.Slice(fixturesArr, func(i, j int) bool {
+		iDateString := getDateFromMatchDisplay(fixturesArr[i])
+		jDateString := getDateFromMatchDisplay(fixturesArr[j])
+
+		iDate, _ := time.Parse(layout, iDateString)
+		jDate, _ := time.Parse(layout, jDateString)
+
+		return iDate.Before(jDate)
+	})
+
+	return fixturesArr
+}
+
+func extractTeams(match string) (string, string) {
+	if strings.Contains(match, " vs. ") {
+		// Handle the "[H] Sheffield Utd vs. Wolves [A]" format
+		parts := strings.Split(match, " vs. ")
+		homeTeam := strings.Trim(parts[0][4:], " ")
+		awayTeam := strings.Trim(parts[1][:len(parts[1])-4], " ")
+		return homeTeam, awayTeam
+	} else {
+		// Handle the "[H] Sheffield Utd 2 - 3 Wolves [A]" format
+		parts := strings.Split(match, " - ")
+		home := strings.Split(parts[0], " ")
+		away := strings.Split(parts[1], " ")
+
+		homeTeam := strings.Trim(home[len(home)-2][4:], " ") // Taking the second-last word after [H] prefix
+		awayTeam := strings.Trim(away[1], " ")               // Taking the first word before [A] suffix
+
+		return homeTeam, awayTeam
+	}
+}
+
 // fixturesCmd represents the fixtures command
 var fixturesCmd = &cobra.Command{
 	Use:   "fixtures",
@@ -167,10 +219,17 @@ var fixturesCmd = &cobra.Command{
 		fmt.Println(roundValue)
 		color.Unset()
 
+		var fixturesArr []string
+
 		for _, match := range matches {
 			homeTeam := match.Teams.Home.Name
+			homeScore := match.Score.Home
 			awayTeam := match.Teams.Away.Name
+			awayScore := match.Score.Away
 			date := match.Fixture.Date
+			fixtureID := match.Fixture.ID
+			timeElapsed := match.Status.Elapsed
+			matchStatus := match.Status.Short
 
 			userFriendlyTime, err := FormatTime(date)
 			if err != nil {
@@ -178,17 +237,31 @@ var fixturesCmd = &cobra.Command{
 				return
 			}
 
-			matchDisplay := fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s", homeTeam, awayTeam, userFriendlyTime)
+			matchDisplay := ""
+			if timeElapsed == nil {
+				matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
+			} else {
+				if matchStatus == "FT" {
+					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\nFull Time\n", homeTeam, homeScore, awayScore, awayTeam, *timeElapsed, date, fixtureID)
+				} else {
+					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, *timeElapsed, date, fixtureID)
+				}
+			}
 
-			if isFavTeam(homeTeam, awayTeam, favTeam) {
-				color.Set(color.Bold)
-				fmt.Println(matchDisplay)
+			// fmt.Println(matchDisplay)
+			fixturesArr = append(fixturesArr, matchDisplay)
+		}
+		sortFixtures(fixturesArr)
+		for _, fixture := range fixturesArr {
+			if isFavTeam(fixture, favTeam) {
+				color.Set(color.FgMagenta)
+				fmt.Println(fixture)
 				color.Unset()
 				continue
 			}
-
-			fmt.Println(matchDisplay)
+			fmt.Println(fixture)
 		}
+
 	},
 }
 

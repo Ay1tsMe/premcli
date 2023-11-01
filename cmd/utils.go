@@ -73,14 +73,13 @@ func GetConfig() error {
 	return nil
 }
 
-func isFavTeam(homeTeam, awayTeam, favTeam string) bool {
+func isFavTeam(matchString, favTeam string) bool {
 	teamName, exists := teamMapping[strings.ToUpper(favTeam)]
 	if !exists {
 		return false
 	}
 
-	return strings.ToUpper(homeTeam) == strings.ToUpper(teamName) ||
-		strings.ToUpper(awayTeam) == strings.ToUpper(teamName)
+	return strings.Contains(strings.ToUpper(matchString), strings.ToUpper(teamName))
 }
 
 func getSeasonYear() string {

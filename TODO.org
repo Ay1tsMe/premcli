@@ -38,7 +38,10 @@
 - [X] Highlight Favourite Team Fixture
 - [X] Display Date and time of each fixture
 - [X] Show Round title at the top of the fixture list
+- [ ] Adjust fixtures to work for both upcoming and live
+- [X] Add match id to each fixture for event tracking
 - [ ] Sort the fixtures by date/time
 - [ ] optional flags for previous and next week fixtures (-p -n flags)
 - [ ] optional flags for all fixtures (-a flag)
 - [ ] Show live fixtures if its happening
+- [ ] Highlight team fixture the team colour
