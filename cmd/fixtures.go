@@ -30,12 +30,12 @@ type ApiResponse struct {
 
 type Match struct {
 	Fixture struct {
-		ID   int
-		Date string
-	}
-	Status struct {
-		Short   string
-		Elapsed *int
+		ID     int
+		Date   string
+		Status struct {
+			Short   string
+			Elapsed int
+		}
 	}
 	Teams struct {
 		Home struct {
@@ -228,9 +228,10 @@ var fixturesCmd = &cobra.Command{
 			awayScore := match.Score.Away
 			date := match.Fixture.Date
 			fixtureID := match.Fixture.ID
-			timeElapsed := match.Status.Elapsed
-			matchStatus := match.Status.Short
+			timeElapsed := match.Fixture.Status.Elapsed
+			matchStatus := match.Fixture.Status.Short
 
+			// Reformat time so its readable
 			userFriendlyTime, err := FormatTime(date)
 			if err != nil {
 				fmt.Println(err)
@@ -238,13 +239,16 @@ var fixturesCmd = &cobra.Command{
 			}
 
 			matchDisplay := ""
-			if timeElapsed == nil {
+			if matchStatus == "NS" {
+				// Match hasn't started
 				matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
 			} else {
 				if matchStatus == "FT" {
-					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\nFull Time\n", homeTeam, homeScore, awayScore, awayTeam, *timeElapsed, date, fixtureID)
+					// Match has finished
+					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\nFULL TIME\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
 				} else {
-					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, *timeElapsed, date, fixtureID)
+					// Match in progress
+					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
 				}
 			}
 
