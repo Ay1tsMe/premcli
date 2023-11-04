@@ -41,7 +41,15 @@
 - [X] Adjust fixtures to work for both upcoming and live
 - [X] Add match id to each fixture for event tracking
 - [X] Sort the fixtures by date/time
-- [ ] optional flags for previous and next week fixtures (-p -n flags)
+- [X] optional flags for previous and next week fixtures (-p -n flags)
+- [X] Show live fixtures if its happening
 - [ ] optional flags for all fixtures (-a flag)
-- [ ] Show live fixtures if its happening
+  - Need to Print the round header for every week
+  - Change from printing the roundValue from GetCurrentRound() to the json round value in league.round
 - [ ] Highlight team fixture the team colour
+
+* Events
+- [ ] Gets the current events from a fixture id
+
+* Table
+- [ ] Displays the table
