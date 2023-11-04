@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,7 +46,7 @@ type Match struct {
 			Name string
 		}
 	}
-	Score struct {
+	Goals struct {
 		Home int
 		Away int
 	}
@@ -55,7 +56,7 @@ type CurrentRound struct {
 	Response []string `json:"response"`
 }
 
-func getCurrentRound() error {
+func getCurrentRound(previous bool, next bool) error {
 	url := buildRoundURL()
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -85,10 +86,40 @@ func getCurrentRound() error {
 
 	if len(responseData.Response) > 0 {
 		roundValue = responseData.Response[0]
-		return nil
+	} else {
+		return fmt.Errorf("No round information found in the API response")
 	}
 
-	return fmt.Errorf("No round information found in the API response")
+	// Edit currentRound to if previous or next flag called
+	// This is kind of stupid but it's faster than another API call
+	if previous || next {
+		parts := strings.Split(roundValue, " ")
+		if len(parts) > 0 {
+			lastPart := parts[len(parts)-1]
+			roundNum, err := strconv.Atoi(lastPart)
+
+			if err != nil {
+				return fmt.Errorf("Error parsing round number: %v", err)
+			}
+
+			if roundNum > 1 {
+				if previous {
+					roundNum--
+
+				} else {
+					roundNum++
+				}
+
+				roundValue = strings.Join(parts[:len(parts)-1], " ") + fmt.Sprintf(" %d", roundNum)
+			} else {
+				return fmt.Errorf("There is no previous round availible")
+			}
+		} else {
+			return fmt.Errorf("Unexpected round format: %v", roundValue)
+		}
+	}
+
+	return nil
 }
 
 func buildURL() string {
@@ -197,13 +228,17 @@ var fixturesCmd = &cobra.Command{
 	Short: "Prints fixtures for current round",
 	Long:  "Prints fixtures for current round and highlights in bold the fixture of your favourite team.",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Get flags if called
+		previousRound, _ := cmd.Flags().GetBool("previous")
+		nextRound, _ := cmd.Flags().GetBool("next")
+
 		err := GetConfig()
 		if err != nil {
 			fmt.Println("Error loading config:", err)
 			return
 		}
 
-		err = getCurrentRound()
+		err = getCurrentRound(previousRound, nextRound)
 		if err != nil {
 			fmt.Println("Error getting current round:", err)
 			return
@@ -223,9 +258,9 @@ var fixturesCmd = &cobra.Command{
 
 		for _, match := range matches {
 			homeTeam := match.Teams.Home.Name
-			homeScore := match.Score.Home
+			homeScore := match.Goals.Home
 			awayTeam := match.Teams.Away.Name
-			awayScore := match.Score.Away
+			awayScore := match.Goals.Away
 			date := match.Fixture.Date
 			fixtureID := match.Fixture.ID
 			timeElapsed := match.Fixture.Status.Elapsed
@@ -252,7 +287,6 @@ var fixturesCmd = &cobra.Command{
 				}
 			}
 
-			// fmt.Println(matchDisplay)
 			fixturesArr = append(fixturesArr, matchDisplay)
 		}
 		sortFixtures(fixturesArr)
@@ -272,13 +306,15 @@ var fixturesCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(fixturesCmd)
 
+	fixturesCmd.PersistentFlags().BoolP("previous", "p", false, "Get fixtures for the previous round")
+	fixturesCmd.PersistentFlags().BoolP("next", "n", false, "Get fixtures for the next round")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// fixturesCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	// Cobra supports local flags which will only run when this command
+	// Cobra supports local flags which will only run when this /command
 	// is called directly, e.g.:
 	// fixturesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
