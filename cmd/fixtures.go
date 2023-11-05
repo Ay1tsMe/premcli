@@ -19,9 +19,6 @@ import (
 )
 
 var (
-	apiKey     string
-	timezone   string
-	favTeam    string
 	roundValue string
 )
 
@@ -122,7 +119,7 @@ func getCurrentRound(previous bool, next bool) error {
 	return nil
 }
 
-func buildURL() string {
+func buildFixturesURL() string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures?league=39"
 
 	season := "&season=" + getSeasonYear()
@@ -141,8 +138,8 @@ func buildRoundURL() string {
 	return baseURL + season
 }
 
-func fetchAndParse() ([]Match, error) {
-	url := buildURL()
+func getFixtures() ([]Match, error) {
+	url := buildFixturesURL()
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -244,7 +241,7 @@ var fixturesCmd = &cobra.Command{
 			return
 		}
 
-		matches, err := fetchAndParse()
+		matches, err := getFixtures()
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
 			return
@@ -280,7 +277,7 @@ var fixturesCmd = &cobra.Command{
 			} else {
 				if matchStatus == "FT" {
 					// Match has finished
-					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\nFULL TIME\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
+					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nGAME HAS FINISHED!\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
 				} else {
 					// Match in progress
 					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)

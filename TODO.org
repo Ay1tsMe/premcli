@@ -52,4 +52,5 @@
 - [ ] Gets the current events from a fixture id
 
 * Table
-- [ ] Displays the table
+- [X] Displays the table
+- [ ] Add colour support in the future (tabswriter does not support color.Set())

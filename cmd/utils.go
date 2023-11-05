@@ -35,6 +35,12 @@ var teamMapping = map[string]string{
 	"WOL": "Wolves",
 }
 
+var (
+	apiKey   string
+	timezone string
+	favTeam  string
+)
+
 func GetConfig() error {
 	configFile, err := os.Open(configPath)
 	if err != nil {
