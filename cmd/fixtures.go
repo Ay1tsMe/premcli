@@ -272,15 +272,17 @@ var fixturesCmd = &cobra.Command{
 
 			// Score Padding
 			const nameScoreWidth = 26
+			const vsWidth = 25
 
 			homePadding := nameScoreWidth - len("[H]") - len(homeTeam) - len(fmt.Sprint(homeScore))
 			awayPadding := nameScoreWidth - len("[A]") - len(awayTeam) - len(fmt.Sprint(awayScore))
+			vsPadding := vsWidth - len("[H]") - len(homeTeam) - len(fmt.Sprint(vsWidth))
 
 			matchDisplay := ""
 			if matchStatus == "NS" {
 				// Match hasn't started
 				// matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
-				matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nStatus: Game Hasn't Started.\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, fixtureID)
+				matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%s\n[A] %s%*s\nStatus: Game Hasn't Started.\nFixture ID: %d\n", userFriendlyTime, homeTeam, vsPadding, "", "vs.", awayTeam, awayPadding, "", fixtureID)
 			} else {
 				if matchStatus == "FT" {
 					// Match has finished
