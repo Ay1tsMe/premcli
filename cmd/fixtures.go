@@ -270,17 +270,26 @@ var fixturesCmd = &cobra.Command{
 				return
 			}
 
+			// Score Padding
+			const nameScoreWidth = 26
+
+			homePadding := nameScoreWidth - len("[H]") - len(homeTeam) - len(fmt.Sprint(homeScore))
+			awayPadding := nameScoreWidth - len("[A]") - len(awayTeam) - len(fmt.Sprint(awayScore))
+
 			matchDisplay := ""
 			if matchStatus == "NS" {
 				// Match hasn't started
-				matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
+				// matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
+				matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nStatus: Game Hasn't Started.\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, fixtureID)
 			} else {
 				if matchStatus == "FT" {
 					// Match has finished
-					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nGAME HAS FINISHED!\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
+					// matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nGAME HAS FINISHED!\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
+					matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nStatus: Game Has Finished.\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, fixtureID)
 				} else {
 					// Match in progress
-					matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
+					// matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
+					matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nTime Elapsed: %d\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, timeElapsed, fixtureID)
 				}
 			}
 
