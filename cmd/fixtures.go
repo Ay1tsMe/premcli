@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 Adam Wyatt
 */
 package cmd
 
@@ -22,7 +22,7 @@ var (
 	roundValue string
 )
 
-type ApiResponse struct {
+type ApiResponseFixture struct {
 	Response []Match `json:"response"`
 }
 
@@ -160,7 +160,7 @@ func getFixtures() ([]Match, error) {
 		return nil, fmt.Errorf("Error reading response: %v", err)
 	}
 
-	var responseData ApiResponse
+	var responseData ApiResponseFixture
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response: %v", err)

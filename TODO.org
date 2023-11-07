@@ -47,6 +47,8 @@
   - Need to Print the round header for every week
   - Change from printing the roundValue from GetCurrentRound() to the json round value in league.round
 - [ ] Highlight team fixture the team colour
+- [ ] Account for half-time
+- [ ] Account for extratime
 
 * Events
 - [ ] Gets the current events from a fixture id

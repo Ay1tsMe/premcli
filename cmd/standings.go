@@ -85,13 +85,9 @@ func getStandings() ([]Standings, error) {
 // standingsCmd represents the standings command
 var standingsCmd = &cobra.Command{
 	Use:   "standings",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Displays the current standings",
+	Long:  `Displays the current standings for the premier league.`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := GetConfig()
 		if err != nil {
