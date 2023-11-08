@@ -51,8 +51,12 @@
 - [ ] Account for extratime
 
 * Events
-- [ ] Gets the current events from a fixture id
+- [X] Gets the current events from a fixture id
 
 * Table
 - [X] Displays the table
 - [ ] Add colour support in the future (tabswriter does not support color.Set())
+
+* Lineups
+
+* Statistics

@@ -120,14 +120,11 @@ func getFixtureByID(fixtureID int) ([]Match, error) {
 
 // liveCmd represents the live command
 var liveCmd = &cobra.Command{
-	Use:   "live",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "live <fixtureID>",
+	Short: "Tracks the live events of a fixture",
+	Long: `Tracks the live events of a fixture given a 'fixtureID'.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+To obtain the 'fixtureID', use 'premcli fixtures' to display the fixtures with their appropriate 'fixtureID'.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := GetConfig()
@@ -183,6 +180,7 @@ to quickly create a Cobra application.`,
 
 		for _, event := range events {
 			eventTime := event.Time.Elapsed
+			eventExtraTime := event.Time.Extra
 			teamName := event.Team.Name
 			playerName := event.Player.Name
 			assistName := event.Assist.Name
@@ -190,15 +188,21 @@ to quickly create a Cobra application.`,
 			eventDetail := event.Detail
 			eventComment := event.Comments
 
+			// Compute Time
+			extraTimeStr := ""
+			if eventExtraTime > 0 {
+				extraTimeStr = fmt.Sprintf("+%d", eventExtraTime)
+			}
+
 			eventSummary := ""
 			if eventType == "Card" {
-				eventSummary = fmt.Sprintf("%d' %s\n%s\n%s\n%s\n", eventTime, eventDetail, teamName, playerName, eventComment)
+				eventSummary = fmt.Sprintf("%d'%s %s\n%s\n%s\n%s\n", eventTime, extraTimeStr, eventDetail, teamName, playerName, eventComment)
 			} else if eventType == "subst" {
-				eventSummary = fmt.Sprintf("%d' %s\n%s\nIN\n%s\nOUT\n%s\n", eventTime, eventDetail, teamName, playerName, assistName)
+				eventSummary = fmt.Sprintf("%d'%s %s\n%s\nIN\n%s\nOUT\n%s\n", eventTime, extraTimeStr, eventDetail, teamName, playerName, assistName)
 			} else if eventType == "Goal" {
-				eventSummary = fmt.Sprintf("%d' GOAL!!!\n%s\nPlayer: %s\nAssist: %s\n%s\n", eventTime, teamName, playerName, assistName, eventDetail)
+				eventSummary = fmt.Sprintf("%d'%s GOAL!!!\n%s\nPlayer: %s\nAssist: %s\n%s\n", eventTime, extraTimeStr, teamName, playerName, assistName, eventDetail)
 			} else if eventType == "Var" {
-				eventSummary = fmt.Sprintf("%d' %s\n%s\n%s\n%s\n", eventTime, eventType, teamName, playerName, eventDetail)
+				eventSummary = fmt.Sprintf("%d'%s %s\n%s\n%s\n%s\n", eventTime, extraTimeStr, eventType, teamName, playerName, eventDetail)
 			}
 
 			eventsArr = append(eventsArr, eventSummary)
@@ -214,6 +218,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(liveCmd)
 
+	liveCmd.Example = ` # Retrieve live events for fixture with ID 1234
+premcli live 1234`
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
