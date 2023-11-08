@@ -1,7 +1,11 @@
+/*
+Contains utlities that can be used across all .go files
+*/
 package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -41,9 +45,14 @@ var (
 	favTeam  string
 )
 
+// Retrieves the config information
 func GetConfig() error {
 	configFile, err := os.Open(configPath)
 	if err != nil {
+		var pathErr *os.PathError
+		if errors.As(err, &pathErr) {
+			return fmt.Errorf("Please run 'premcli config' to set up a configuration.")
+		}
 		return fmt.Errorf("Failed to open config file: %v", err)
 	}
 	defer configFile.Close()
@@ -79,6 +88,7 @@ func GetConfig() error {
 	return nil
 }
 
+// Checks if favourite team is present within string
 func isFavTeam(matchString, favTeam string) bool {
 	teamName, exists := teamMapping[strings.ToUpper(favTeam)]
 	if !exists {
@@ -88,6 +98,7 @@ func isFavTeam(matchString, favTeam string) bool {
 	return strings.Contains(strings.ToUpper(matchString), strings.ToUpper(teamName))
 }
 
+// Gets the current season year
 func getSeasonYear() string {
 	currentYear := time.Now().Year()
 	currentMonth := time.Now().Month()

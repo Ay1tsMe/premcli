@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Displays the live events timeline of a fixture given the fixtureID.
 */
 package cmd
 
@@ -40,6 +40,7 @@ type ApiResponseFixtureByID struct {
 	Response []Match `json:"response"`
 }
 
+// Builds the API URL for retrieving fixtures
 func buildFixtureByIDURL(fixtureID int) string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures?"
 
@@ -48,6 +49,7 @@ func buildFixtureByIDURL(fixtureID int) string {
 	return baseURL + fixture
 }
 
+// Builds the API URL for retrieving events
 func buildEventsURL(fixtureID int) string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures/events?"
 
@@ -56,6 +58,7 @@ func buildEventsURL(fixtureID int) string {
 	return baseURL + fixture
 }
 
+// Gets the events given a fixture ID and parses the JSON
 func getEvents(fixtureID int) ([]Events, error) {
 	url := buildEventsURL(fixtureID)
 
@@ -87,6 +90,7 @@ func getEvents(fixtureID int) ([]Events, error) {
 	return responseData.Response, nil
 }
 
+// Gets the fixture information given a fixture ID and parses the JSON
 func getFixtureByID(fixtureID int) ([]Match, error) {
 	url := buildFixtureByIDURL(fixtureID)
 
@@ -118,7 +122,6 @@ func getFixtureByID(fixtureID int) ([]Match, error) {
 	return responseData.Response, nil
 }
 
-// liveCmd represents the live command
 var liveCmd = &cobra.Command{
 	Use:   "live <fixtureID>",
 	Short: "Tracks the live events of a fixture",
@@ -127,6 +130,7 @@ var liveCmd = &cobra.Command{
 To obtain the 'fixtureID', use 'premcli fixtures' to display the fixtures with their appropriate 'fixtureID'.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Get the config
 		err := GetConfig()
 		if err != nil {
 			fmt.Println("Error loading config:", err)
@@ -138,12 +142,14 @@ To obtain the 'fixtureID', use 'premcli fixtures' to display the fixtures with t
 			return
 		}
 
+		// Get events
 		events, err := getEvents(fixtureID)
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
 			return
 		}
 
+		// Get fixture information
 		match, err := getFixtureByID(fixtureID)
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
@@ -178,6 +184,7 @@ To obtain the 'fixtureID', use 'premcli fixtures' to display the fixtures with t
 		// Events Info
 		var eventsArr []string
 
+		// Loop through each event and store it in output array
 		for _, event := range events {
 			eventTime := event.Time.Elapsed
 			eventExtraTime := event.Time.Extra
@@ -208,6 +215,7 @@ To obtain the 'fixtureID', use 'premcli fixtures' to display the fixtures with t
 			eventsArr = append(eventsArr, eventSummary)
 		}
 
+		// Display Fixture info and events
 		fmt.Println(matchDisplay)
 		for _, event := range eventsArr {
 			fmt.Println(event)
@@ -220,13 +228,4 @@ func init() {
 
 	liveCmd.Example = ` # Retrieve live events for fixture with ID 1234
 premcli live 1234`
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// liveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// liveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

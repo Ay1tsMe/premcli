@@ -1,11 +1,9 @@
 /*
-Copyright © 2023 Adam Wyatt
-
-	Sets up premcli.conf file for the user
-	Collects information such as:
-	- API Key
-	- TimeZone
-	- Favourite Team
+Sets up premcli.conf file for the user
+Collects information such as:
+- API Key
+- TimeZone
+- Favourite Team
 */
 package cmd
 
@@ -47,7 +45,6 @@ func CreateDir() bool {
 	return true
 }
 
-// configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Configure settings for premcli",
@@ -72,14 +69,18 @@ var configCmd = &cobra.Command{
 		// Get config variables
 		reader := bufio.NewReader(os.Stdin)
 
+		fmt.Print("Welcome to premcli. To use premcli, you must acquire an api key from API-FOOTBALL found here: https://rapidapi.com/api-sports/api/api-football/\n")
 		fmt.Print("Enter your API key: ")
 		apiKey, _ := reader.ReadString('\n')
 		apiKey = strings.TrimSpace(apiKey)
 
+		fmt.Print("TIMEZONE EXAMPLE: Europe/Berlin, Australia/Sydney\n")
+		fmt.Print("Use 'premcli timezones' to list all available timezones.\n")
 		fmt.Print("Enter your Timezone: ")
 		timezone, _ := reader.ReadString('\n')
 		timezone = strings.TrimSpace(timezone)
 
+		fmt.Print("TEAM EXAMPLE: WOL, MCI, CHE\n")
 		fmt.Print("Enter your Premier League team: ")
 		favTeam, _ := reader.ReadString('\n')
 		favTeam = strings.TrimSpace(favTeam)
@@ -104,14 +105,4 @@ var configCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(configCmd)
 	configCmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "Overwrite the existing config")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

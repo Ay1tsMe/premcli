@@ -1,5 +1,6 @@
 /*
-Copyright © 2023 Adam Wyatt
+Displays the fixtures for the current round. If specified can display the previous
+and next rounds fixtures.
 */
 package cmd
 
@@ -53,6 +54,7 @@ type CurrentRound struct {
 	Response []string `json:"response"`
 }
 
+// Helper function to get the current round for the API URL
 func getCurrentRound(previous bool, next bool) error {
 	url := buildRoundURL()
 
@@ -119,6 +121,7 @@ func getCurrentRound(previous bool, next bool) error {
 	return nil
 }
 
+// Build the fixtures URL for the API
 func buildFixturesURL() string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures?league=39"
 
@@ -130,6 +133,7 @@ func buildFixturesURL() string {
 	return baseURL + season + round + tz
 }
 
+// Build the round URL for the API
 func buildRoundURL() string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/fixtures/rounds?league=39&current=true"
 
@@ -138,6 +142,7 @@ func buildRoundURL() string {
 	return baseURL + season
 }
 
+// Get the Fixtures and parse the JSON
 func getFixtures() ([]Match, error) {
 	url := buildFixturesURL()
 
@@ -169,6 +174,7 @@ func getFixtures() ([]Match, error) {
 	return responseData.Response, nil
 }
 
+// Formats the Date and Time to something that is human readable
 func FormatTime(isoTime string) (string, error) {
 	parsedTime, err := time.Parse(time.RFC3339, isoTime)
 	if err != nil {
@@ -178,11 +184,13 @@ func FormatTime(isoTime string) (string, error) {
 	return parsedTime.Format("02 Jan 2006, 03:04 PM"), nil
 }
 
+// Helper function to get the date from a string. Used for sorting fixtures by date.
 func getDateFromMatchDisplay(matchDisplay string) string {
 	dateString := strings.Split(matchDisplay, "Date: ")[1][:21]
 	return dateString
 }
 
+// Sorts the fixtures by the date
 func sortFixtures(fixturesArr []string) []string {
 	layout := "02 Jan 2006, 03:04 PM"
 
@@ -199,6 +207,7 @@ func sortFixtures(fixturesArr []string) []string {
 	return fixturesArr
 }
 
+// Helper function for getting the Team names from a string. Used to highlight the favourite team fixture
 func extractTeams(match string) (string, string) {
 	if strings.Contains(match, " vs. ") {
 		// Handle the "[H] Sheffield Utd vs. Wolves [A]" format
@@ -219,7 +228,6 @@ func extractTeams(match string) (string, string) {
 	}
 }
 
-// fixturesCmd represents the fixtures command
 var fixturesCmd = &cobra.Command{
 	Use:   "fixtures",
 	Short: "Prints fixtures for current round",
@@ -229,30 +237,35 @@ var fixturesCmd = &cobra.Command{
 		previousRound, _ := cmd.Flags().GetBool("previous")
 		nextRound, _ := cmd.Flags().GetBool("next")
 
+		// Gets the config
 		err := GetConfig()
 		if err != nil {
 			fmt.Println("Error loading config:", err)
 			return
 		}
 
+		// Gets the currentRound
 		err = getCurrentRound(previousRound, nextRound)
 		if err != nil {
 			fmt.Println("Error getting current round:", err)
 			return
 		}
 
+		// Gets fixtures
 		matches, err := getFixtures()
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
 			return
 		}
 
+		// Highlight Round title
 		color.Set(color.Underline)
 		fmt.Println(roundValue)
 		color.Unset()
 
 		var fixturesArr []string
 
+		// Loop through each fixture and store in output array
 		for _, match := range matches {
 			homeTeam := match.Teams.Home.Name
 			homeScore := match.Goals.Home
@@ -281,22 +294,21 @@ var fixturesCmd = &cobra.Command{
 			matchDisplay := ""
 			if matchStatus == "NS" {
 				// Match hasn't started
-				// matchDisplay = fmt.Sprintf("[H] %s vs. %s [A]\nDate: %s\nFixture ID: %d\n", homeTeam, awayTeam, userFriendlyTime, fixtureID)
 				matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%s\n[A] %s%*s\nStatus: Game Hasn't Started.\nFixture ID: %d\n", userFriendlyTime, homeTeam, vsPadding, "", "vs.", awayTeam, awayPadding, "", fixtureID)
 			} else {
 				if matchStatus == "FT" {
 					// Match has finished
-					// matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nGAME HAS FINISHED!\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
 					matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nStatus: Game Has Finished.\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, fixtureID)
 				} else {
 					// Match in progress
-					// matchDisplay = fmt.Sprintf("[H] %s %d - %d %s [A]\nTime Elapsed: %d\nDate: %s\nFixture ID: %d\n", homeTeam, homeScore, awayScore, awayTeam, timeElapsed, userFriendlyTime, fixtureID)
 					matchDisplay = fmt.Sprintf("Date: %s\n[H] %s%*s%d\n[A] %s%*s%d\nTime Elapsed: %d\nFixture ID: %d\n", userFriendlyTime, homeTeam, homePadding, "", homeScore, awayTeam, awayPadding, "", awayScore, timeElapsed, fixtureID)
 				}
 			}
 
 			fixturesArr = append(fixturesArr, matchDisplay)
 		}
+		// Sort and colour fixtures
+		// Print to terminal
 		sortFixtures(fixturesArr)
 		for _, fixture := range fixturesArr {
 			if isFavTeam(fixture, favTeam) {
@@ -316,13 +328,4 @@ func init() {
 
 	fixturesCmd.PersistentFlags().BoolP("previous", "p", false, "Get fixtures for the previous round")
 	fixturesCmd.PersistentFlags().BoolP("next", "n", false, "Get fixtures for the next round")
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// fixturesCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this /command
-	// is called directly, e.g.:
-	// fixturesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

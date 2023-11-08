@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Displays the live standings in the terminal.
 */
 package cmd
 
@@ -42,6 +42,7 @@ type Standings struct {
 	}
 }
 
+// Build Standings URL for the API
 func buildStandingsURL() string {
 	baseURL := "https://api-football-v1.p.rapidapi.com/v3/standings?league=39"
 
@@ -51,6 +52,7 @@ func buildStandingsURL() string {
 
 }
 
+// Gets the standings
 func getStandings() ([]Standings, error) {
 	url := buildStandingsURL()
 
@@ -89,20 +91,22 @@ var standingsCmd = &cobra.Command{
 	Long:  `Displays the current standings for the premier league.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		// Get the config
 		err := GetConfig()
 		if err != nil {
 			fmt.Println("Error loading config:", err)
 			return
 		}
 
+		// Get the standings
 		standings, err := getStandings()
 		if err != nil {
 			fmt.Println("Error fetching and parsing:", err)
 			return
 		}
 
+		// Initialise Tabswriter
 		writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug|tabwriter.AlignRight)
-
 		fmt.Fprintln(writer, "Rank\tClub\tMP\tW\tD\tL\tGF\tGA\tGD\tPts\tForm\t")
 
 		// Iterate through the standings and print the desired information
@@ -132,14 +136,4 @@ var standingsCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(standingsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// standingsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// standingsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
