@@ -57,6 +57,6 @@
 - [X] Displays the table
 - [ ] Add colour support in the future (tabswriter does not support color.Set())
 
-* Lineups
-
-* Statistics
+* TODO README.md
+* TODO Lineups
+* TODO Statistics
