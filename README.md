@@ -6,7 +6,7 @@ Premcli is a commandline tool that enables you to track live information related
 Features
 --------
 
-![Demo](insertdemohere)
+![Demo](images/demo.png)
 
 * Fixtures
 * Standings
@@ -50,7 +50,7 @@ You will be prompted to enter your apikey, timezone and favourite team.:
 
 #### API KEY
 To obtain an apikey, make a free account on rapidapi.com and subscribe to API-FOOTBALL(https://rapidapi.com/api-sports/api/api-football/)
-(insert image)
+![API](images/api.png)
 
 #### Timezone
 The format for your timezone should be like the following:
