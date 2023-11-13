@@ -3,10 +3,10 @@ PREMCLI
 
 Premcli is a commandline tool that enables you to track live information related to the premier league. `premcli` requires an API-FOOTBALL api key which can be obtain here:
 
+![Demo](images/demo.png)
+
 Features
 --------
-
-![Demo](images/demo.png)
 
 * Fixtures
 * Standings
