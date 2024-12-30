@@ -52,6 +52,7 @@
 
 * Events
 - [X] Gets the current events from a fixture id
+- [ ] Fix incorrent added time. Example "premclu live 1035151"
 
 * Table
 - [X] Displays the table
@@ -60,3 +61,9 @@
 * TODO README.md
 * TODO Lineups
 * TODO Statistics
+
+* Maybe incoporate Bubble Tea somehow:
+https://github.com/charmbracelet/bubbletea
+
+* Use VHS for gif demo in readme
+https://github.com/charmbracelet/vhs
