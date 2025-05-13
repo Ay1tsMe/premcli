@@ -130,3 +130,6 @@ Planned features that will be released in the future:
 * Auto reload live events as an option
 * Display all fixtures with -a flag
 * Highlight Team with team colour rather than system colours
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for more information.
